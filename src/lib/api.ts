@@ -1,6 +1,6 @@
 import { ModelFolder, DiskUsage, DownloadJob } from '@/types/model';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE = '/api';
 
 export const api = {
   async getModels(): Promise<ModelFolder[]> {
