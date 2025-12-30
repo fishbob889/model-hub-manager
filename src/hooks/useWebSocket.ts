@@ -7,6 +7,8 @@ interface UseWebSocketOptions {
   onOpen?: () => void;
   onClose?: () => void;
   onError?: (error: Event) => void;
+  onSuccess?: (data: LogEntry) => void;
+  onDownloadError?: (data: LogEntry) => void;
 }
 
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
@@ -33,6 +35,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
           const data = JSON.parse(event.data) as LogEntry;
           setLogs((prev) => [...prev, data]);
           options.onMessage?.(data);
+          
+          // Trigger callbacks based on message type
+          if (data.type === 'success') {
+            options.onSuccess?.(data);
+          } else if (data.type === 'error') {
+            options.onDownloadError?.(data);
+          }
         } catch {
           // Handle plain text messages
           const logEntry: LogEntry = {
