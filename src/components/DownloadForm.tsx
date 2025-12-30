@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 interface DownloadFormProps {
-  onSubmit: (modelId: string, folderName: string) => void;
+  onSubmit: (modelId: string, folderName: string, token?: string) => void;
   isDownloading: boolean;
 }
 
 export const DownloadForm = ({ onSubmit, isDownloading }: DownloadFormProps) => {
   const [modelId, setModelId] = useState('');
   const [folderName, setFolderName] = useState('');
+  const [token, setToken] = useState('');
 
   const handleModelIdChange = (value: string) => {
     setModelId(value);
@@ -46,7 +47,7 @@ export const DownloadForm = ({ onSubmit, isDownloading }: DownloadFormProps) => 
       return;
     }
 
-    onSubmit(modelId.trim(), folderName.trim());
+    onSubmit(modelId.trim(), folderName.trim(), token.trim() || undefined);
   };
 
   return (
@@ -105,6 +106,24 @@ export const DownloadForm = ({ onSubmit, isDownloading }: DownloadFormProps) => 
           />
           <p className="text-xs text-muted-foreground">
             Will be saved to /data/models/{folderName || '<folder-name>'}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="token" className="text-sm font-medium">
+            Hugging Face Token <span className="text-muted-foreground font-normal">(optional)</span>
+          </Label>
+          <Input
+            id="token"
+            type="password"
+            placeholder="hf_xxxxxxxxxxxxx"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            disabled={isDownloading}
+            className="font-mono bg-secondary/50 border-border focus:border-primary"
+          />
+          <p className="text-xs text-muted-foreground">
+            Required for gated models like Llama
           </p>
         </div>
 

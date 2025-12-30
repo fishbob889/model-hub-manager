@@ -40,33 +40,13 @@ const Index = () => {
     }
   };
 
-  const handleDownload = async (modelId: string, folderName: string) => {
+  const handleDownload = async (modelId: string, folderName: string, token?: string) => {
     setIsDownloading(true);
     clearLogs();
 
     try {
-      // Try real API first
-      await api.downloadModel(modelId, folderName);
-      
-      // If backend not available, simulate the download
-      simulateDownload(modelId);
-      
+      await api.downloadModel(modelId, folderName, token);
       toast.success(`Started downloading ${modelId}`);
-      
-      // Simulate completion after logs finish
-      setTimeout(() => {
-        setIsDownloading(false);
-        // Add mock model to list
-        const newModel: ModelFolder = {
-          name: folderName,
-          size: '~13 GB',
-          sizeBytes: 13000000000,
-          lastModified: new Date().toISOString(),
-          files: 8,
-        };
-        setModels((prev) => [...prev, newModel]);
-        toast.success(`Successfully downloaded ${modelId}`);
-      }, 7000);
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Download failed');
@@ -125,7 +105,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6">
           <p className="text-sm text-muted-foreground text-center font-mono">
             Model storage: <span className="text-primary">/data/models</span> • 
-            Backend: <span className="text-primary">localhost:3001</span>
+            Backend: <span className="text-primary">localhost:3000</span>
           </p>
         </div>
       </footer>
