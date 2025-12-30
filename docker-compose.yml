@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  llm-manager:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      # Mount your local models directory
+      - ./models:/data/models
+      # Optional: Mount HuggingFace cache for faster re-downloads
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      - PORT=3001
+      # Optional: Add your HuggingFace token for gated models
+      # - HF_TOKEN=your_token_here
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

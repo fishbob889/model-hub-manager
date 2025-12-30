@@ -1,12 +1,134 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
+import { Header } from '@/components/Header';
+import { DiskUsage } from '@/components/DiskUsage';
+import { ModelList } from '@/components/ModelList';
+import { DownloadForm } from '@/components/DownloadForm';
+import { LogViewer } from '@/components/LogViewer';
+import { api } from '@/lib/api';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { ModelFolder, DiskUsage as DiskUsageType } from '@/types/model';
 
 const Index = () => {
+  const [models, setModels] = useState<ModelFolder[]>([]);
+  const [diskUsage, setDiskUsage] = useState<DiskUsageType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const { logs, isConnected, clearLogs, simulateDownload, connect } = useWebSocket();
+
+  useEffect(() => {
+    loadData();
+    // Try to connect WebSocket
+    connect();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [modelsData, diskData] = await Promise.all([
+        api.getModels(),
+        api.getDiskUsage(),
+      ]);
+      setModels(modelsData);
+      setDiskUsage(diskData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownload = async (modelId: string, folderName: string) => {
+    setIsDownloading(true);
+    clearLogs();
+
+    try {
+      // Try real API first
+      await api.downloadModel(modelId, folderName);
+      
+      // If backend not available, simulate the download
+      simulateDownload(modelId);
+      
+      toast.success(`Started downloading ${modelId}`);
+      
+      // Simulate completion after logs finish
+      setTimeout(() => {
+        setIsDownloading(false);
+        // Add mock model to list
+        const newModel: ModelFolder = {
+          name: folderName,
+          size: '~13 GB',
+          sizeBytes: 13000000000,
+          lastModified: new Date().toISOString(),
+          files: 8,
+        };
+        setModels((prev) => [...prev, newModel]);
+        toast.success(`Successfully downloaded ${modelId}`);
+      }, 7000);
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('Download failed');
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDelete = async (folderName: string) => {
+    try {
+      await api.deleteModel(folderName);
+      setModels((prev) => prev.filter((m) => m.name !== folderName));
+      toast.success(`Deleted ${folderName}`);
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete model');
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Toaster 
+        position="top-right" 
+        theme="dark"
+        toastOptions={{
+          className: 'bg-card border-border text-foreground',
+        }}
+      />
+      <Header />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column - Stats and Download Form */}
+          <div className="space-y-6">
+            {diskUsage && <DiskUsage data={diskUsage} />}
+            <DownloadForm onSubmit={handleDownload} isDownloading={isDownloading} />
+          </div>
+
+          {/* Right column - Model List and Logs */}
+          <div className="lg:col-span-2 space-y-6">
+            <ModelList 
+              models={models} 
+              onDelete={handleDelete} 
+              isLoading={isLoading} 
+            />
+            <LogViewer 
+              logs={logs} 
+              isConnected={isConnected} 
+              onClear={clearLogs} 
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-12">
+        <div className="container mx-auto px-4 py-6">
+          <p className="text-sm text-muted-foreground text-center font-mono">
+            Model storage: <span className="text-primary">/data/models</span> • 
+            Backend: <span className="text-primary">localhost:3001</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
