@@ -15,7 +15,21 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { logs, isConnected, clearLogs, simulateDownload, connect } = useWebSocket();
+  const handleDownloadSuccess = (data: { message: string }) => {
+    setIsDownloading(false);
+    toast.success(data.message || 'Download completed successfully');
+    loadData(); // Refresh models list and disk usage
+  };
+
+  const handleDownloadError = (data: { message: string }) => {
+    setIsDownloading(false);
+    toast.error(data.message || 'Download failed');
+  };
+
+  const { logs, isConnected, clearLogs, simulateDownload, connect } = useWebSocket({
+    onSuccess: handleDownloadSuccess,
+    onDownloadError: handleDownloadError,
+  });
 
   useEffect(() => {
     loadData();
