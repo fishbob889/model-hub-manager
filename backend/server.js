@@ -7,7 +7,7 @@ const path = require('path');
 const http = require('http');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const MODELS_DIR = '/data/models';
 
 // Middleware
