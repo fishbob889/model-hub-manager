@@ -1,6 +1,6 @@
 import { ModelFolder, DiskUsage, DownloadJob } from '@/types/model';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Simulated data for development
 const mockModels: ModelFolder[] = [

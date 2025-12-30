@@ -15,7 +15,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const wsUrl = options.url || `ws://${window.location.hostname}:3001/ws`;
+  const wsUrl = options.url || `ws://${window.location.hostname}:3000/ws`;
 
   const connect = useCallback(() => {
     try {
